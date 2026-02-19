@@ -49,3 +49,9 @@ target_compile_definitions(hwm14_dwm_loader_smoke PRIVATE HWM14_SOURCE_DIR="${CM
 hwm14_apply_common_warnings(hwm14_dwm_loader_smoke)
 hwm14_apply_runtime_flags(hwm14_dwm_loader_smoke)
 add_test(NAME hwm14_dwm_loader_smoke COMMAND hwm14_dwm_loader_smoke)
+
+add_executable(hwm14_golden_csv_smoke test_golden_csv_smoke.cpp)
+target_compile_definitions(hwm14_golden_csv_smoke PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+hwm14_apply_common_warnings(hwm14_golden_csv_smoke)
+hwm14_apply_runtime_flags(hwm14_golden_csv_smoke)
+add_test(NAME hwm14_golden_csv_smoke COMMAND hwm14_golden_csv_smoke)

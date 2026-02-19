@@ -47,3 +47,12 @@ cmake --build --preset macos-debug -j --target hwm14_docs
 ```
 
 Generated HTML is written under `build/<preset>/docs/html/`.
+
+## Golden dataset conversion
+
+```bash
+tools/convert_gfortran_to_csv.py \
+  --input testdata/gfortran.txt \
+  --profiles-out testdata/golden_profiles.csv \
+  --dwm-out testdata/golden_dwm07b.csv
+```

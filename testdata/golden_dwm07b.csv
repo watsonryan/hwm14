@@ -1,0 +1,56 @@
+scenario,x_name,x,mag_mer,mag_zon
+dwm: magnetic latitude profile,mlat,-90.0,157.613,-158.954
+dwm: magnetic latitude profile,mlat,-80.0,158.138,-141.865
+dwm: magnetic latitude profile,mlat,-70.0,56.293,-41.271
+dwm: magnetic latitude profile,mlat,-60.0,60.878,69.305
+dwm: magnetic latitude profile,mlat,-50.0,121.506,-5.004
+dwm: magnetic latitude profile,mlat,-40.0,40.882,-15.775
+dwm: magnetic latitude profile,mlat,-30.0,21.85,-25.517
+dwm: magnetic latitude profile,mlat,-20.0,11.64,-34.856
+dwm: magnetic latitude profile,mlat,-10.0,5.533,-40.228
+dwm: magnetic latitude profile,mlat,0.0,5.327,-45.354
+dwm: magnetic latitude profile,mlat,10.0,8.204,-50.906
+dwm: magnetic latitude profile,mlat,20.0,9.422,-55.711
+dwm: magnetic latitude profile,mlat,30.0,3.494,-56.017
+dwm: magnetic latitude profile,mlat,40.0,-7.319,-49.619
+dwm: magnetic latitude profile,mlat,50.0,-7.873,18.973
+dwm: magnetic latitude profile,mlat,60.0,-33.112,80.795
+dwm: magnetic latitude profile,mlat,70.0,-20.228,-8.189
+dwm: magnetic latitude profile,mlat,80.0,-55.275,-64.783
+dwm: magnetic latitude profile,mlat,90.0,-137.149,-170.526
+dwm: magnetic local time profile,mlt,0.0,-22.332,-129.27
+dwm: magnetic local time profile,mlt,1.5,-28.861,-78.026
+dwm: magnetic local time profile,mlt,3.0,-6.246,-33.077
+dwm: magnetic local time profile,mlt,4.5,-5.592,-33.656
+dwm: magnetic local time profile,mlt,6.0,-32.813,-39.796
+dwm: magnetic local time profile,mlt,7.5,-49.672,-34.709
+dwm: magnetic local time profile,mlt,9.0,-48.676,-26.754
+dwm: magnetic local time profile,mlt,10.5,-41.507,-20.2
+dwm: magnetic local time profile,mlt,12.0,-35.088,-15.157
+dwm: magnetic local time profile,mlt,13.5,-28.14,-12.072
+dwm: magnetic local time profile,mlt,15.0,-18.344,-13.87
+dwm: magnetic local time profile,mlt,16.5,-9.103,-27.605
+dwm: magnetic local time profile,mlt,18.0,-12.015,-57.829
+dwm: magnetic local time profile,mlt,19.5,-27.512,-86.677
+dwm: magnetic local time profile,mlt,21.0,-24.814,-103.292
+dwm: magnetic local time profile,mlt,22.5,-11.058,-127.315
+dwm: magnetic local time profile,mlt,24.0,-22.332,-129.27
+dwm: kp profile,kp,0.0,-8.066,5.787
+dwm: kp profile,kp,0.5,-6.955,5.282
+dwm: kp profile,kp,1.0,-3.365,3.849
+dwm: kp profile,kp,1.5,3.202,1.647
+dwm: kp profile,kp,2.0,13.413,-1.112
+dwm: kp profile,kp,2.5,26.175,-3.461
+dwm: kp profile,kp,3.0,39.805,-4.712
+dwm: kp profile,kp,3.5,54.121,-5.081
+dwm: kp profile,kp,4.0,68.787,-4.864
+dwm: kp profile,kp,4.5,83.302,-4.428
+dwm: kp profile,kp,5.0,97.009,-4.194
+dwm: kp profile,kp,5.5,109.699,-4.429
+dwm: kp profile,kp,6.0,121.506,-5.004
+dwm: kp profile,kp,6.5,132.195,-5.75
+dwm: kp profile,kp,7.0,141.548,-6.483
+dwm: kp profile,kp,7.5,149.386,-7.019
+dwm: kp profile,kp,8.0,155.577,-7.193
+dwm: kp profile,kp,8.5,155.577,-7.193
+dwm: kp profile,kp,9.0,155.577,-7.193
