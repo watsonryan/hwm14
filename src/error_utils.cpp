@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Error formatting and construction helpers.
+/**
+ * @file error_utils.cpp
+ * @brief Error formatting and construction helper implementations.
+ */
 
 #include "hwm14/error.hpp"
 

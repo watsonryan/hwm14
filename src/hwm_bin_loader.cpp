@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Stream-binary parser for HWM14 .bin coefficient metadata.
+/**
+ * @file hwm_bin_loader.cpp
+ * @brief Implementation of quiet-time HWM14 binary header/data loader.
+ */
 
 #include "hwm14/detail/hwm_bin_loader.hpp"
 

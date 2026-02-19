@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Fortran-unformatted parser for dwm07b104i.dat.
+/**
+ * @file dwm_loader.cpp
+ * @brief Implementation of `dwm07b104i.dat` loader/parser.
+ */
 
 #include "hwm14/detail/dwm_loader.hpp"
 

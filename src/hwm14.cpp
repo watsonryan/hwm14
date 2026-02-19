@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Core HWM14 model API implementation with pure C++ evaluator port.
+/**
+ * @file hwm14.cpp
+ * @brief Core HWM14 model API implementation and evaluator kernels.
+ */
 
 #include "hwm14/hwm14.hpp"
 

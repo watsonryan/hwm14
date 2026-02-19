@@ -1,3 +1,7 @@
+/**
+ * @file fortran_unformatted.hpp
+ * @brief Internal helpers for Fortran sequential-unformatted record I/O.
+ */
 #pragma once
 
 // Author: watsonryan
@@ -11,6 +15,7 @@
 
 namespace hwm14::detail {
 
+/** @brief Read a single Fortran unformatted record payload (strip length sentinels). */
 inline bool ReadFortranRecordRaw(std::ifstream& in, std::vector<char>& payload) {
   std::int32_t n1 = 0;
   in.read(reinterpret_cast<char*>(&n1), static_cast<std::streamsize>(sizeof(n1)));
@@ -38,6 +43,7 @@ inline bool ReadFortranRecordRaw(std::ifstream& in, std::vector<char>& payload) 
 }
 
 template <typename T>
+/** @brief Unpack payload as one trivially-copyable scalar object. */
 inline bool UnpackRecordScalar(const std::vector<char>& payload, T& out) {
   static_assert(std::is_trivially_copyable_v<T>);
   if (payload.size() != sizeof(T)) {
@@ -48,6 +54,7 @@ inline bool UnpackRecordScalar(const std::vector<char>& payload, T& out) {
 }
 
 template <typename T>
+/** @brief Unpack payload as contiguous array of trivially-copyable objects. */
 inline bool UnpackRecordArray(const std::vector<char>& payload, std::vector<T>& out) {
   static_assert(std::is_trivially_copyable_v<T>);
   if (payload.size() % sizeof(T) != 0) {

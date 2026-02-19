@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Implement YYDDD decoding and UT normalization helpers.
+/**
+ * @file time_utils.cpp
+ * @brief Implementation of YYDDD decode and UT normalization helpers.
+ */
 
 #include "hwm14/detail/time_utils.hpp"
 

@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Resolve required HWM14 data file locations.
+/**
+ * @file data_paths.cpp
+ * @brief Implementation of runtime HWM14 data file path resolution.
+ */
 
 #include "hwm14/data_paths.hpp"
 

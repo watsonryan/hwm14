@@ -1,5 +1,7 @@
-// Author: watsonryan
-// Purpose: Fortran-unformatted parser for gd2qd.dat.
+/**
+ * @file gd2qd_loader.cpp
+ * @brief Implementation of `gd2qd.dat` loader/parser.
+ */
 
 #include "hwm14/detail/gd2qd_loader.hpp"
 

@@ -1,3 +1,7 @@
+/**
+ * @file hwm_bin_loader.hpp
+ * @brief Internal loader for HWM14 quiet-time binary coefficient headers.
+ */
 #pragma once
 
 // Author: watsonryan
@@ -13,6 +17,7 @@
 
 namespace hwm14::detail {
 
+/** @brief Parsed header and arrays from `hwm123114.bin`. */
 struct HwmBinHeader {
   std::int32_t nbf{};
   std::int32_t maxs{};
@@ -31,6 +36,7 @@ struct HwmBinHeader {
   std::array<double, 5> e2{};
 };
 
+/** @brief Load and parse the HWM14 binary header and associated arrays. */
 [[nodiscard]] Result<HwmBinHeader, Error> LoadHwmBinHeader(const std::filesystem::path& path);
 
 }  // namespace hwm14::detail

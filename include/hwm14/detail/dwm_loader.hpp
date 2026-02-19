@@ -1,3 +1,7 @@
+/**
+ * @file dwm_loader.hpp
+ * @brief Internal loader for `dwm07b104i.dat` disturbance wind coefficients.
+ */
 #pragma once
 
 // Author: watsonryan
@@ -12,6 +16,7 @@
 
 namespace hwm14::detail {
 
+/** @brief Parsed disturbance wind model data from `dwm07b104i.dat`. */
 struct DwmData {
   std::int32_t nterm{};
   std::int32_t mmax{};
@@ -21,6 +26,7 @@ struct DwmData {
   float twidth{};
 };
 
+/** @brief Load and parse `dwm07b104i.dat` Fortran-unformatted records. */
 [[nodiscard]] Result<DwmData, Error> LoadDwmData(const std::filesystem::path& path);
 
 }  // namespace hwm14::detail

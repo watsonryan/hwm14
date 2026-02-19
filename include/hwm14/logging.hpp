@@ -1,3 +1,7 @@
+/**
+ * @file logging.hpp
+ * @brief Lightweight logging helpers for tools/tests around the log-free core library.
+ */
 #pragma once
 
 // Author: watsonryan
@@ -12,6 +16,7 @@
 
 namespace hwm14 {
 
+/** @brief Log severity levels. */
 enum class LogLevel {
   kDebug,
   kInfo,
@@ -19,6 +24,7 @@ enum class LogLevel {
   kError,
 };
 
+/** @brief Convert log level enum to lowercase string token. */
 [[nodiscard]] inline std::string_view ToString(LogLevel level) {
   switch (level) {
     case LogLevel::kDebug:
@@ -33,20 +39,24 @@ enum class LogLevel {
   return "unknown";
 }
 
+/** @brief Pluggable log sink callback. */
 using LogSink = std::function<void(LogLevel, std::string_view)>;
 
+/** @brief Default sink that writes formatted log lines to stderr. */
 [[nodiscard]] inline LogSink MakeStderrLogSink() {
   return [](LogLevel level, std::string_view message) {
     std::cerr << "[" << ToString(level) << "] " << message << "\n";
   };
 }
 
+/** @brief Emit a message if sink is configured. */
 inline void Log(LogSink sink, LogLevel level, std::string_view message) {
   if (sink) {
     sink(level, message);
   }
 }
 
+/** @brief Emit formatted `Error` message with context. */
 inline void LogError(LogSink sink, std::string_view context, const Error& error) {
   if (!sink) {
     return;
