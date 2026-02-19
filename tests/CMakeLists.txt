@@ -28,3 +28,10 @@ target_compile_definitions(hwm14_gd2qd_loader_smoke PRIVATE HWM14_SOURCE_DIR="${
 hwm14_apply_common_warnings(hwm14_gd2qd_loader_smoke)
 hwm14_apply_runtime_flags(hwm14_gd2qd_loader_smoke)
 add_test(NAME hwm14_gd2qd_loader_smoke COMMAND hwm14_gd2qd_loader_smoke)
+
+add_executable(hwm14_dwm_loader_smoke test_dwm_loader.cpp)
+target_link_libraries(hwm14_dwm_loader_smoke PRIVATE hwm14)
+target_compile_definitions(hwm14_dwm_loader_smoke PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+hwm14_apply_common_warnings(hwm14_dwm_loader_smoke)
+hwm14_apply_runtime_flags(hwm14_dwm_loader_smoke)
+add_test(NAME hwm14_dwm_loader_smoke COMMAND hwm14_dwm_loader_smoke)
