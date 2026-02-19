@@ -15,6 +15,8 @@ set(HWM14_SANITIZER "" CACHE STRING "Sanitizer: , address, undefined, thread")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(warnings)
 include(sanitizers)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 add_library(hwm14
   src/hwm14.cpp
@@ -48,6 +50,44 @@ if(HWM14_BUILD_EXAMPLES)
   hwm14_apply_common_warnings(hwm14_cli)
   hwm14_apply_runtime_flags(hwm14_cli)
 endif()
+
+install(TARGETS hwm14
+  EXPORT hwm14Targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+set(HWM14_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/hwm14")
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/hwm14ConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/hwm14Config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/hwm14Config.cmake"
+  INSTALL_DESTINATION "${HWM14_INSTALL_CMAKEDIR}"
+)
+
+install(EXPORT hwm14Targets
+  FILE hwm14Targets.cmake
+  NAMESPACE hwm14::
+  DESTINATION "${HWM14_INSTALL_CMAKEDIR}"
+)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/hwm14Config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/hwm14ConfigVersion.cmake"
+  DESTINATION "${HWM14_INSTALL_CMAKEDIR}"
+)
 
 if(HWM14_BUILD_TESTS)
   include(CTest)
