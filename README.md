@@ -81,6 +81,12 @@ Optional overrides:
 - `.clang-tidy`
 - `.github/workflows/ci.yml`
 
+CI currently validates:
+- Linux debug build/tests
+- Linux ASan build/tests
+- Linux UBSan build/tests
+- install/package consumer smoke path
+
 ## Error handling and logging
 
 - Library APIs return `Result<T, Error>` and do not emit logs directly.

@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build-test:
+  linux-debug:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,6 +21,12 @@ jobs:
       - name: Test (Debug)
         run: ctest --preset linux-debug --output-on-failure
 
+  linux-asan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Configure (ASan)
         run: cmake --preset linux-asan
 
@@ -29,6 +35,27 @@ jobs:
 
       - name: Test (ASan)
         run: ctest --preset linux-asan --output-on-failure
+
+  linux-ubsan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (UBSan)
+        run: cmake --preset linux-ubsan
+
+      - name: Build (UBSan)
+        run: cmake --build --preset linux-ubsan -j
+
+      - name: Test (UBSan)
+        run: ctest --preset linux-ubsan --output-on-failure
+
+  package-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install/package smoke
         env:
