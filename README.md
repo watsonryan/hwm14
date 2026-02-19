@@ -56,3 +56,10 @@ tools/convert_gfortran_to_csv.py \
   --profiles-out testdata/golden_profiles.csv \
   --dwm-out testdata/golden_dwm07b.csv
 ```
+
+## Additional docs
+
+- `docs/design_notes.md`
+- `docs/numerical_fidelity.md`
+- `docs/thread_safety_and_performance.md`
+- `docs/licensing.md`
