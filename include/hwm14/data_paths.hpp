@@ -17,6 +17,8 @@ struct DataPaths {
   std::filesystem::path gd2qd_dat;
 };
 
+[[nodiscard]] Result<DataPaths, Error> ResolveDataPathsFromDirectory(const std::filesystem::path& data_dir);
+[[nodiscard]] Result<DataPaths, Error> ResolveDataPathsWithSearchPaths(const Options& options);
 [[nodiscard]] Result<DataPaths, Error> ResolveDataPaths(const Options& options);
 
 }  // namespace hwm14

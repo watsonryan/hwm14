@@ -16,11 +16,13 @@ class Model {
  public:
   [[nodiscard]] static Result<Model, Error> LoadFromDirectory(std::filesystem::path data_dir,
                                                               Options options = {});
+  [[nodiscard]] static Result<Model, Error> LoadWithSearchPaths(Options options = {});
 
   [[nodiscard]] Result<Winds, Error> Evaluate(const Inputs& in) const;
 
  private:
   struct Impl;
+  [[nodiscard]] static Result<Model, Error> LoadFromResolvedPaths(DataPaths paths, Options options);
 
   explicit Model(std::shared_ptr<const Impl> impl, Options options) : impl_(std::move(impl)), options_(std::move(options)) {}
 
