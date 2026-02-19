@@ -9,9 +9,6 @@ This repository is a pure C++20 port of HWM14 with these components:
 - QD conversion coefficient loading (`gd2qd.dat`)
 - disturbance model coefficient loading (`dwm07b104i.dat`)
 
-Fortran sources under `fortran/` are translation references only and are not
-compiled by this build.
-
 ## API layers
 
 - Parity-facing API (`hwm14::Model`, `Inputs`, `Winds`) mirrors the reference

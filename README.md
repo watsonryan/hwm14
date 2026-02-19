@@ -2,13 +2,13 @@
 
 Author: watsonryan
 
+HWM14 -- empirical model of the horizontal neutral wind in the upper thermosphere -- https://ccmc.gsfc.nasa.gov/models/HWM14~2014/
+
 C++20 port workspace for HWM14.
 
 ## Status
 
-This repository is being migrated to a pure C++20 implementation.
-Reference Fortran files under `fortran/` are used only as translation reference,
-not compiled into the C++ build.
+This repository provides a pure C++20 implementation of HWM14.
 
 ## Build
 
