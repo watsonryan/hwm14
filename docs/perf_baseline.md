@@ -27,8 +27,13 @@ After allocation optimization:
 - `ns_per_eval=3806.46`
 - `ns_per_eval=3664.19`
 
+After second hot-path scratch-buffer optimization:
+- `ns_per_eval=3496.52`
+- `ns_per_eval=3504.88`
+
 Observed improvement range:
-- ~6.8% to ~10.2% faster in repeated runs
+- first optimization: ~6.8% to ~10.2% faster
+- second optimization vs original baseline: ~14.1% to ~14.3% faster
 
 ## Numerical safety
 
