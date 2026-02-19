@@ -1,6 +1,6 @@
 # hwm14-cpp
 
-Author: watsonryan
+Author: watson
 
 HWM14 -- empirical model of the horizontal neutral wind in the upper thermosphere -- https://ccmc.gsfc.nasa.gov/models/HWM14~2014/
 
