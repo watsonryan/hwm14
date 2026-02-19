@@ -5,16 +5,21 @@
 #include <iostream>
 
 #include "hwm14/hwm14.hpp"
+#include "hwm14/logging.hpp"
 
 int main(int argc, char** argv) {
+  const auto log = hwm14::MakeStderrLogSink();
+
   if (argc != 7) {
-    std::cerr << "usage: hwm14_cli <data_dir> <yyddd> <ut_seconds> <alt_km> <glat_deg> <glon_deg>\n";
+    hwm14::Log(log,
+               hwm14::LogLevel::kError,
+               "usage: hwm14_cli <data_dir> <yyddd> <ut_seconds> <alt_km> <glat_deg> <glon_deg>");
     return EXIT_FAILURE;
   }
 
   auto model = hwm14::Model::LoadFromDirectory(argv[1]);
   if (!model) {
-    std::cerr << hwm14::FormatError(model.error()) << "\n";
+    hwm14::LogError(log, "model load failed", model.error());
     return EXIT_FAILURE;
   }
 
@@ -28,7 +33,7 @@ int main(int argc, char** argv) {
 
   auto out = model.value().Evaluate(in);
   if (!out) {
-    std::cerr << hwm14::FormatError(out.error()) << "\n";
+    hwm14::LogError(log, "evaluate failed", out.error());
     return EXIT_FAILURE;
   }
 

@@ -69,3 +69,8 @@ tools/convert_gfortran_to_csv.py \
 - `.clang-format`
 - `.clang-tidy`
 - `.github/workflows/ci.yml`
+
+## Error handling and logging
+
+- Library APIs return `Result<T, Error>` and do not emit logs directly.
+- CLI/tests can use `include/hwm14/logging.hpp` (`LogSink`, `Log`, `LogError`).
