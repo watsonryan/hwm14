@@ -75,3 +75,9 @@ target_compile_definitions(hwm14_golden_dwm_parity PRIVATE HWM14_SOURCE_DIR="${C
 hwm14_apply_common_warnings(hwm14_golden_dwm_parity)
 hwm14_apply_runtime_flags(hwm14_golden_dwm_parity)
 add_test(NAME hwm14_golden_dwm_parity COMMAND hwm14_golden_dwm_parity)
+
+add_executable(hwm14_perf_benchmark hwm14_perf_benchmark.cpp)
+target_link_libraries(hwm14_perf_benchmark PRIVATE hwm14)
+target_compile_definitions(hwm14_perf_benchmark PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+hwm14_apply_common_warnings(hwm14_perf_benchmark)
+hwm14_apply_runtime_flags(hwm14_perf_benchmark)

@@ -57,6 +57,16 @@ tools/convert_gfortran_to_csv.py \
   --dwm-out testdata/golden_dwm07b.csv
 ```
 
+## Profiling
+
+```bash
+tools/profile_hwm14.sh
+```
+
+Optional overrides:
+- `HWM14_PERF_SAMPLES`
+- `HWM14_PERF_ITERATIONS`
+
 ## Additional docs
 
 - `docs/design_notes.md`
