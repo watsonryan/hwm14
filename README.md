@@ -73,6 +73,7 @@ Optional overrides:
 - `docs/numerical_fidelity.md`
 - `docs/thread_safety_and_performance.md`
 - `docs/licensing.md`
+- `docs/perf_baseline.md`
 
 ## Code quality config
 
