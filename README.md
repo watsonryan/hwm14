@@ -68,3 +68,4 @@ tools/convert_gfortran_to_csv.py \
 
 - `.clang-format`
 - `.clang-tidy`
+- `.github/workflows/ci.yml`
