@@ -26,6 +26,7 @@ add_library(hwm14
   src/hwm_bin_loader.cpp
   src/gd2qd_loader.cpp
   src/dwm_loader.cpp
+  src/time_utils.cpp
 )
 
 add_library(hwm14::hwm14 ALIAS hwm14)

@@ -9,6 +9,7 @@
 #include "hwm14/detail/dwm_loader.hpp"
 #include "hwm14/detail/gd2qd_loader.hpp"
 #include "hwm14/detail/hwm_bin_loader.hpp"
+#include "hwm14/detail/time_utils.hpp"
 
 namespace hwm14 {
 
@@ -22,9 +23,19 @@ struct Model::Impl {
 namespace {
 
 Result<Winds, Error> ValidateCommonInputs(const Inputs& in, std::string_view where) {
+  const auto decoded = detail::DecodeYyddd(in.yyddd);
+  if (!decoded) {
+    return Result<Winds, Error>::Err(
+        MakeError(decoded.error().code, decoded.error().message, decoded.error().detail, std::string(where)));
+  }
+
   if (!std::isfinite(in.ut_seconds) || !std::isfinite(in.altitude_km) || !std::isfinite(in.geodetic_lat_deg) ||
       !std::isfinite(in.geodetic_lon_deg) || !std::isfinite(in.ap3)) {
     return Result<Winds, Error>::Err(MakeError(ErrorCode::kInvalidInput, "inputs must be finite", {}, std::string(where)));
+  }
+  if (in.geodetic_lat_deg < -90.0 || in.geodetic_lat_deg > 90.0) {
+    return Result<Winds, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "geodetic_lat_deg must be in [-90, 90]", {}, std::string(where)));
   }
   if (in.altitude_km < 0.0 || in.altitude_km > 5000.0) {
     return Result<Winds, Error>::Err(

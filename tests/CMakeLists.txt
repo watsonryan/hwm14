@@ -55,3 +55,9 @@ target_compile_definitions(hwm14_golden_csv_smoke PRIVATE HWM14_SOURCE_DIR="${CM
 hwm14_apply_common_warnings(hwm14_golden_csv_smoke)
 hwm14_apply_runtime_flags(hwm14_golden_csv_smoke)
 add_test(NAME hwm14_golden_csv_smoke COMMAND hwm14_golden_csv_smoke)
+
+add_executable(hwm14_time_utils_smoke test_time_utils.cpp)
+target_link_libraries(hwm14_time_utils_smoke PRIVATE hwm14)
+hwm14_apply_common_warnings(hwm14_time_utils_smoke)
+hwm14_apply_runtime_flags(hwm14_time_utils_smoke)
+add_test(NAME hwm14_time_utils_smoke COMMAND hwm14_time_utils_smoke)
