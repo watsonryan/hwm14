@@ -20,6 +20,7 @@ add_library(hwm14
   src/hwm14.cpp
   src/error_utils.cpp
   src/data_paths.cpp
+  src/hwm_bin_loader.cpp
 )
 
 add_library(hwm14::hwm14 ALIAS hwm14)
