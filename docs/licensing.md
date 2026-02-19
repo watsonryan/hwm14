@@ -2,9 +2,11 @@
 
 Author: watsonryan
 
-Status: unresolved for redistribution.
+Code license: GPL-3.0 (GNU General Public License v3.0).
 
-This repository is currently in a transition phase and uses reference artifacts
-under `testdata/` from upstream HWM14 for local development and parity testing only.
+The source code in this repository is licensed under GPL-3.0.
+See `LICENSE` at the repo root.
 
-Before distribution, confirm upstream license terms for code and coefficient data.
+Data/provenance note:
+Some reference artifacts under `testdata/` are used for local development and parity testing.
+Confirm upstream terms for any redistribution of non-code model/data artifacts.
