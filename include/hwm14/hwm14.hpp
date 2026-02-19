@@ -18,6 +18,11 @@ class Model {
                                                               Options options = {});
   [[nodiscard]] static Result<Model, Error> LoadWithSearchPaths(Options options = {});
 
+  [[nodiscard]] Result<Winds, Error> TotalWinds(const Inputs& in) const;
+  [[nodiscard]] Result<Winds, Error> QuietWinds(const Inputs& in) const;
+  [[nodiscard]] Result<Winds, Error> DisturbanceWindsGeo(const Inputs& in) const;
+  [[nodiscard]] Result<Winds, Error> DisturbanceWindsMag(double mlt_h, double mlat_deg, double kp) const;
+
   [[nodiscard]] Result<Winds, Error> Evaluate(const Inputs& in) const;
 
  private:

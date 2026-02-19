@@ -19,6 +19,22 @@ struct Model::Impl {
   detail::DwmData dwm{};
 };
 
+namespace {
+
+Result<Winds, Error> ValidateCommonInputs(const Inputs& in, std::string_view where) {
+  if (!std::isfinite(in.ut_seconds) || !std::isfinite(in.altitude_km) || !std::isfinite(in.geodetic_lat_deg) ||
+      !std::isfinite(in.geodetic_lon_deg) || !std::isfinite(in.ap3)) {
+    return Result<Winds, Error>::Err(MakeError(ErrorCode::kInvalidInput, "inputs must be finite", {}, std::string(where)));
+  }
+  if (in.altitude_km < 0.0 || in.altitude_km > 5000.0) {
+    return Result<Winds, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "altitude_km must be in [0, 5000]", {}, std::string(where)));
+  }
+  return Result<Winds, Error>::Ok(Winds{});
+}
+
+}  // namespace
+
 Result<Model, Error> Model::LoadFromResolvedPaths(DataPaths paths, Options options) {
   auto hwm = detail::LoadHwmBinHeader(paths.hwm_bin);
   if (!hwm) {
@@ -61,23 +77,69 @@ Result<Model, Error> Model::LoadWithSearchPaths(Options options) {
   return LoadFromResolvedPaths(std::move(paths.value()), std::move(options));
 }
 
-Result<Winds, Error> Model::Evaluate(const Inputs& in) const {
-  if (!std::isfinite(in.ut_seconds) || !std::isfinite(in.altitude_km) || !std::isfinite(in.geodetic_lat_deg) ||
-      !std::isfinite(in.geodetic_lon_deg) || !std::isfinite(in.ap3)) {
-    return Result<Winds, Error>::Err(
-        MakeError(ErrorCode::kInvalidInput, "inputs must be finite", {}, "Model::Evaluate"));
-  }
-  if (in.altitude_km < 0.0 || in.altitude_km > 5000.0) {
-    return Result<Winds, Error>::Err(
-        MakeError(ErrorCode::kInvalidInput, "altitude_km must be in [0, 5000]", {}, "Model::Evaluate"));
+Result<Winds, Error> Model::TotalWinds(const Inputs& in) const {
+  const auto valid = ValidateCommonInputs(in, "Model::TotalWinds");
+  if (!valid) {
+    return Result<Winds, Error>::Err(valid.error());
   }
 
-  // Translation of HWM14 internals to pure C++ is still in progress.
-  return Result<Winds, Error>::Err(
-      MakeError(ErrorCode::kNotImplemented,
-                "pure C++ HWM14 evaluator not implemented yet",
-                "data files resolved successfully",
-                "Model::Evaluate"));
+  auto q = QuietWinds(in);
+  if (!q) {
+    return q;
+  }
+  if (in.ap3 < 0.0) {
+    return q;
+  }
+
+  auto d = DisturbanceWindsGeo(in);
+  if (!d) {
+    return d;
+  }
+
+  Winds out{};
+  out.meridional_mps = q.value().meridional_mps + d.value().meridional_mps;
+  out.zonal_mps = q.value().zonal_mps + d.value().zonal_mps;
+  return Result<Winds, Error>::Ok(out);
+}
+
+Result<Winds, Error> Model::QuietWinds(const Inputs& in) const {
+  const auto valid = ValidateCommonInputs(in, "Model::QuietWinds");
+  if (!valid) {
+    return Result<Winds, Error>::Err(valid.error());
+  }
+  return Result<Winds, Error>::Err(MakeError(ErrorCode::kNotImplemented,
+                                             "pure C++ quiet-time evaluator not implemented yet",
+                                             "data files loaded successfully",
+                                             "Model::QuietWinds"));
+}
+
+Result<Winds, Error> Model::DisturbanceWindsGeo(const Inputs& in) const {
+  const auto valid = ValidateCommonInputs(in, "Model::DisturbanceWindsGeo");
+  if (!valid) {
+    return Result<Winds, Error>::Err(valid.error());
+  }
+  if (in.ap3 < 0.0) {
+    return Result<Winds, Error>::Ok(Winds{});
+  }
+  return Result<Winds, Error>::Err(MakeError(ErrorCode::kNotImplemented,
+                                             "pure C++ geographic disturbance evaluator not implemented yet",
+                                             "data files loaded successfully",
+                                             "Model::DisturbanceWindsGeo"));
+}
+
+Result<Winds, Error> Model::DisturbanceWindsMag(double mlt_h, double mlat_deg, double kp) const {
+  if (!std::isfinite(mlt_h) || !std::isfinite(mlat_deg) || !std::isfinite(kp)) {
+    return Result<Winds, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "inputs must be finite", {}, "Model::DisturbanceWindsMag"));
+  }
+  return Result<Winds, Error>::Err(MakeError(ErrorCode::kNotImplemented,
+                                             "pure C++ magnetic disturbance evaluator not implemented yet",
+                                             "data files loaded successfully",
+                                             "Model::DisturbanceWindsMag"));
+}
+
+Result<Winds, Error> Model::Evaluate(const Inputs& in) const {
+  return TotalWinds(in);
 }
 
 }  // namespace hwm14
