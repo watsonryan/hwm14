@@ -14,18 +14,18 @@ This repository provides a pure C++20 implementation of HWM14.
 
 ```mermaid
 flowchart TD
-  A[Client code] --> B[hwm14::Model API]
-  B --> C[data_paths resolver]
-  C --> D[hwm123114.bin loader]
-  C --> E[dwm07b104i.dat loader]
-  C --> F[gd2qd.dat loader]
-  D --> G[Model::Impl coefficients]
+  A["Client code"] --> B["hwm14::Model API"]
+  B --> C["data_paths resolver"]
+  C --> D["hwm123114.bin loader"]
+  C --> E["dwm07b104i.dat loader"]
+  C --> F["gd2qd.dat loader"]
+  D --> G["Model::Impl coefficients"]
   E --> G
   F --> G
-  G --> H[Evaluate / TotalWinds]
-  H --> I[QuietWinds kernel]
-  H --> J[DisturbanceWindsGeo/Mag kernels]
-  I --> K[Winds (m/s)]
+  G --> H["Evaluate and TotalWinds"]
+  H --> I["QuietWinds kernel"]
+  H --> J["DisturbanceWindsGeo and DisturbanceWindsMag kernels"]
+  I --> K["Winds m/s"]
   J --> K
 ```
 
@@ -124,7 +124,6 @@ Optional overrides:
 - `docs/licensing.md`
 - `docs/perf_baseline.md`
 - `docs/api_usage.md`
-- `docs/licensing.md`
 
 ## License
 
