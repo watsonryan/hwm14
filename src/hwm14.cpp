@@ -448,52 +448,60 @@ Result<Winds, Error> ValidateCommonInputs(const Inputs& in, std::string_view whe
 Result<Winds, Error> QuietWindsImpl(const Model::Impl& impl, const Inputs& in) {
   const auto& h = impl.hwm;
 
-  std::vector<double> fs(static_cast<std::size_t>(h.maxs + 1) * 2U, 0.0);
-  std::vector<double> fm(static_cast<std::size_t>(h.maxm + 1) * 2U, 0.0);
-  std::vector<double> fl(static_cast<std::size_t>(h.maxl + 1) * 2U, 0.0);
+  struct QuietScratch {
+    std::vector<double> fs;
+    std::vector<double> fm;
+    std::vector<double> fl;
+    std::vector<double> gpbar;
+    std::vector<double> gvbar;
+    std::vector<double> gwbar;
+    std::vector<double> zwght;
+    std::vector<double> bz;
+  };
+  thread_local QuietScratch scratch;
+
+  scratch.fs.assign(static_cast<std::size_t>(h.maxs + 1) * 2U, 0.0);
+  scratch.fm.assign(static_cast<std::size_t>(h.maxm + 1) * 2U, 0.0);
+  scratch.fl.assign(static_cast<std::size_t>(h.maxl + 1) * 2U, 0.0);
 
   const double day = static_cast<double>(in.yyddd % 1000);
   double aa = day * kTwoPi / 365.25;
   for (int s = 0; s <= h.maxs; ++s) {
     const double bb = static_cast<double>(s) * aa;
-    fs[static_cast<std::size_t>(2 * s)] = std::cos(bb);
-    fs[static_cast<std::size_t>(2 * s + 1)] = std::sin(bb);
+    scratch.fs[static_cast<std::size_t>(2 * s)] = std::cos(bb);
+    scratch.fs[static_cast<std::size_t>(2 * s + 1)] = std::sin(bb);
   }
 
   const double stl = std::fmod(in.ut_seconds / 3600.0 + in.geodetic_lon_deg / 15.0 + 48.0, 24.0);
   aa = stl * kTwoPi / 24.0;
   for (int l = 0; l <= h.maxl; ++l) {
     const double cc = static_cast<double>(l) * aa;
-    fl[static_cast<std::size_t>(2 * l)] = std::cos(cc);
-    fl[static_cast<std::size_t>(2 * l + 1)] = std::sin(cc);
+    scratch.fl[static_cast<std::size_t>(2 * l)] = std::cos(cc);
+    scratch.fl[static_cast<std::size_t>(2 * l + 1)] = std::sin(cc);
   }
 
   aa = in.geodetic_lon_deg * kDeg2Rad;
   for (int m = 0; m <= h.maxm; ++m) {
     const double bb = static_cast<double>(m) * aa;
-    fm[static_cast<std::size_t>(2 * m)] = std::cos(bb);
-    fm[static_cast<std::size_t>(2 * m + 1)] = std::sin(bb);
+    scratch.fm[static_cast<std::size_t>(2 * m)] = std::cos(bb);
+    scratch.fm[static_cast<std::size_t>(2 * m + 1)] = std::sin(bb);
   }
 
   const double theta = (90.0 - in.geodetic_lat_deg) * kDeg2Rad;
-  std::vector<double> gpbar;
-  std::vector<double> gvbar;
-  std::vector<double> gwbar;
-  impl.alf.Basis(h.maxn, impl.maxo, theta, gpbar, gvbar, gwbar);
+  impl.alf.Basis(h.maxn, impl.maxo, theta, scratch.gpbar, scratch.gvbar, scratch.gwbar);
 
-  std::vector<double> zwght;
   int lev = 0;
-  VertWght(in.altitude_km, h, zwght, lev);
+  VertWght(in.altitude_km, h, scratch.zwght, lev);
 
-  std::vector<double> bz(static_cast<std::size_t>(h.nbf), 0.0);
-  const std::array<double, 4> wavefactor = {0.0, 1.0, 1.0, 1.0};
-  const std::array<double, 4> tidefactor = {0.0, 1.0, 1.0, 1.0};
+  scratch.bz.assign(static_cast<std::size_t>(h.nbf), 0.0);
+  static constexpr std::array<double, 4> wavefactor = {0.0, 1.0, 1.0, 1.0};
+  static constexpr std::array<double, 4> tidefactor = {0.0, 1.0, 1.0, 1.0};
 
   double u = 0.0;
   double v = 0.0;
 
   for (int b = 0; b <= h.p; ++b) {
-    if (zwght[static_cast<std::size_t>(b)] == 0.0) {
+    if (scratch.zwght[static_cast<std::size_t>(b)] == 0.0) {
       continue;
     }
 
@@ -511,80 +519,80 @@ Result<Winds, Error> QuietWindsImpl(const Model::Impl& impl, const Inputs& in) {
 
     for (int n = 1; n <= amaxn; ++n) {
       const double sc = std::sin(static_cast<double>(n) * theta);
-      bz[static_cast<std::size_t>(c - 1)] = -sc;
-      bz[static_cast<std::size_t>(c)] = sc;
+      scratch.bz[static_cast<std::size_t>(c - 1)] = -sc;
+      scratch.bz[static_cast<std::size_t>(c)] = sc;
       c += 2;
     }
     for (int s = 1; s <= amaxs; ++s) {
-      const double cs = fs[static_cast<std::size_t>(2 * s)];
-      const double ss = fs[static_cast<std::size_t>(2 * s + 1)];
+      const double cs = scratch.fs[static_cast<std::size_t>(2 * s)];
+      const double ss = scratch.fs[static_cast<std::size_t>(2 * s + 1)];
       for (int n = 1; n <= amaxn; ++n) {
         const double sc = std::sin(static_cast<double>(n) * theta);
-        bz[static_cast<std::size_t>(c - 1)] = -sc * cs;
-        bz[static_cast<std::size_t>(c)] = sc * ss;
-        bz[static_cast<std::size_t>(c + 1)] = sc * cs;
-        bz[static_cast<std::size_t>(c + 2)] = -sc * ss;
+        scratch.bz[static_cast<std::size_t>(c - 1)] = -sc * cs;
+        scratch.bz[static_cast<std::size_t>(c)] = sc * ss;
+        scratch.bz[static_cast<std::size_t>(c + 1)] = sc * cs;
+        scratch.bz[static_cast<std::size_t>(c + 2)] = -sc * ss;
         c += 4;
       }
     }
 
     for (int m = 1; m <= pmaxm; ++m) {
-      const double cm = fm[static_cast<std::size_t>(2 * m)] * wavefactor[static_cast<std::size_t>(m)];
-      const double sm = fm[static_cast<std::size_t>(2 * m + 1)] * wavefactor[static_cast<std::size_t>(m)];
+      const double cm = scratch.fm[static_cast<std::size_t>(2 * m)] * wavefactor[static_cast<std::size_t>(m)];
+      const double sm = scratch.fm[static_cast<std::size_t>(2 * m + 1)] * wavefactor[static_cast<std::size_t>(m)];
       for (int n = m; n <= pmaxn; ++n) {
-        const double vb = gvbar[Idx2(n, m, impl.maxo)];
-        const double wb = gwbar[Idx2(n, m, impl.maxo)];
-        bz[static_cast<std::size_t>(c - 1)] = -vb * cm;
-        bz[static_cast<std::size_t>(c)] = vb * sm;
-        bz[static_cast<std::size_t>(c + 1)] = -wb * sm;
-        bz[static_cast<std::size_t>(c + 2)] = -wb * cm;
+        const double vb = scratch.gvbar[Idx2(n, m, impl.maxo)];
+        const double wb = scratch.gwbar[Idx2(n, m, impl.maxo)];
+        scratch.bz[static_cast<std::size_t>(c - 1)] = -vb * cm;
+        scratch.bz[static_cast<std::size_t>(c)] = vb * sm;
+        scratch.bz[static_cast<std::size_t>(c + 1)] = -wb * sm;
+        scratch.bz[static_cast<std::size_t>(c + 2)] = -wb * cm;
         c += 4;
       }
       for (int s = 1; s <= pmaxs; ++s) {
-        const double cs = fs[static_cast<std::size_t>(2 * s)];
-        const double ss = fs[static_cast<std::size_t>(2 * s + 1)];
+        const double cs = scratch.fs[static_cast<std::size_t>(2 * s)];
+        const double ss = scratch.fs[static_cast<std::size_t>(2 * s + 1)];
         for (int n = m; n <= pmaxn; ++n) {
-          const double vb = gvbar[Idx2(n, m, impl.maxo)];
-          const double wb = gwbar[Idx2(n, m, impl.maxo)];
-          bz[static_cast<std::size_t>(c - 1)] = -vb * cm * cs;
-          bz[static_cast<std::size_t>(c)] = vb * sm * cs;
-          bz[static_cast<std::size_t>(c + 1)] = -wb * sm * cs;
-          bz[static_cast<std::size_t>(c + 2)] = -wb * cm * cs;
-          bz[static_cast<std::size_t>(c + 3)] = -vb * cm * ss;
-          bz[static_cast<std::size_t>(c + 4)] = vb * sm * ss;
-          bz[static_cast<std::size_t>(c + 5)] = -wb * sm * ss;
-          bz[static_cast<std::size_t>(c + 6)] = -wb * cm * ss;
+          const double vb = scratch.gvbar[Idx2(n, m, impl.maxo)];
+          const double wb = scratch.gwbar[Idx2(n, m, impl.maxo)];
+          scratch.bz[static_cast<std::size_t>(c - 1)] = -vb * cm * cs;
+          scratch.bz[static_cast<std::size_t>(c)] = vb * sm * cs;
+          scratch.bz[static_cast<std::size_t>(c + 1)] = -wb * sm * cs;
+          scratch.bz[static_cast<std::size_t>(c + 2)] = -wb * cm * cs;
+          scratch.bz[static_cast<std::size_t>(c + 3)] = -vb * cm * ss;
+          scratch.bz[static_cast<std::size_t>(c + 4)] = vb * sm * ss;
+          scratch.bz[static_cast<std::size_t>(c + 5)] = -wb * sm * ss;
+          scratch.bz[static_cast<std::size_t>(c + 6)] = -wb * cm * ss;
           c += 8;
         }
       }
     }
 
     for (int l = 1; l <= tmaxl; ++l) {
-      const double cl = fl[static_cast<std::size_t>(2 * l)] * tidefactor[static_cast<std::size_t>(l)];
-      const double sl = fl[static_cast<std::size_t>(2 * l + 1)] * tidefactor[static_cast<std::size_t>(l)];
+      const double cl = scratch.fl[static_cast<std::size_t>(2 * l)] * tidefactor[static_cast<std::size_t>(l)];
+      const double sl = scratch.fl[static_cast<std::size_t>(2 * l + 1)] * tidefactor[static_cast<std::size_t>(l)];
       for (int n = l; n <= tmaxn; ++n) {
-        const double vb = gvbar[Idx2(n, l, impl.maxo)];
-        const double wb = gwbar[Idx2(n, l, impl.maxo)];
-        bz[static_cast<std::size_t>(c - 1)] = -vb * cl;
-        bz[static_cast<std::size_t>(c)] = vb * sl;
-        bz[static_cast<std::size_t>(c + 1)] = -wb * sl;
-        bz[static_cast<std::size_t>(c + 2)] = -wb * cl;
+        const double vb = scratch.gvbar[Idx2(n, l, impl.maxo)];
+        const double wb = scratch.gwbar[Idx2(n, l, impl.maxo)];
+        scratch.bz[static_cast<std::size_t>(c - 1)] = -vb * cl;
+        scratch.bz[static_cast<std::size_t>(c)] = vb * sl;
+        scratch.bz[static_cast<std::size_t>(c + 1)] = -wb * sl;
+        scratch.bz[static_cast<std::size_t>(c + 2)] = -wb * cl;
         c += 4;
       }
       for (int s = 1; s <= tmaxs; ++s) {
-        const double cs = fs[static_cast<std::size_t>(2 * s)];
-        const double ss = fs[static_cast<std::size_t>(2 * s + 1)];
+        const double cs = scratch.fs[static_cast<std::size_t>(2 * s)];
+        const double ss = scratch.fs[static_cast<std::size_t>(2 * s + 1)];
         for (int n = l; n <= tmaxn; ++n) {
-          const double vb = gvbar[Idx2(n, l, impl.maxo)];
-          const double wb = gwbar[Idx2(n, l, impl.maxo)];
-          bz[static_cast<std::size_t>(c - 1)] = -vb * cl * cs;
-          bz[static_cast<std::size_t>(c)] = vb * sl * cs;
-          bz[static_cast<std::size_t>(c + 1)] = -wb * sl * cs;
-          bz[static_cast<std::size_t>(c + 2)] = -wb * cl * cs;
-          bz[static_cast<std::size_t>(c + 3)] = -vb * cl * ss;
-          bz[static_cast<std::size_t>(c + 4)] = vb * sl * ss;
-          bz[static_cast<std::size_t>(c + 5)] = -wb * sl * ss;
-          bz[static_cast<std::size_t>(c + 6)] = -wb * cl * ss;
+          const double vb = scratch.gvbar[Idx2(n, l, impl.maxo)];
+          const double wb = scratch.gwbar[Idx2(n, l, impl.maxo)];
+          scratch.bz[static_cast<std::size_t>(c - 1)] = -vb * cl * cs;
+          scratch.bz[static_cast<std::size_t>(c)] = vb * sl * cs;
+          scratch.bz[static_cast<std::size_t>(c + 1)] = -wb * sl * cs;
+          scratch.bz[static_cast<std::size_t>(c + 2)] = -wb * cl * cs;
+          scratch.bz[static_cast<std::size_t>(c + 3)] = -vb * cl * ss;
+          scratch.bz[static_cast<std::size_t>(c + 4)] = vb * sl * ss;
+          scratch.bz[static_cast<std::size_t>(c + 5)] = -wb * sl * ss;
+          scratch.bz[static_cast<std::size_t>(c + 6)] = -wb * cl * ss;
           c += 8;
         }
       }
@@ -593,8 +601,8 @@ Result<Winds, Error> QuietWindsImpl(const Model::Impl& impl, const Inputs& in) {
     c -= 1;
     const double* mcol = impl.hwm.mparm.data() + static_cast<std::size_t>(h.nbf) * static_cast<std::size_t>(d);
     const double* tcol = impl.tparm.data() + static_cast<std::size_t>(h.nbf) * static_cast<std::size_t>(d);
-    u += zwght[static_cast<std::size_t>(b)] * DotN(bz.data(), mcol, c);
-    v += zwght[static_cast<std::size_t>(b)] * DotN(bz.data(), tcol, c);
+    u += scratch.zwght[static_cast<std::size_t>(b)] * DotN(scratch.bz.data(), mcol, c);
+    v += scratch.zwght[static_cast<std::size_t>(b)] * DotN(scratch.bz.data(), tcol, c);
   }
 
   Winds w{};
