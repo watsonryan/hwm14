@@ -15,6 +15,13 @@ hwm14_apply_common_warnings(hwm14_api_smoke)
 hwm14_apply_runtime_flags(hwm14_api_smoke)
 add_test(NAME hwm14_api_smoke COMMAND hwm14_api_smoke)
 
+add_executable(hwm14_model_load_validation test_model_load_validation.cpp)
+target_link_libraries(hwm14_model_load_validation PRIVATE hwm14)
+target_compile_definitions(hwm14_model_load_validation PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+hwm14_apply_common_warnings(hwm14_model_load_validation)
+hwm14_apply_runtime_flags(hwm14_model_load_validation)
+add_test(NAME hwm14_model_load_validation COMMAND hwm14_model_load_validation)
+
 add_executable(hwm14_hwm_bin_loader_smoke test_hwm_bin_loader.cpp)
 target_link_libraries(hwm14_hwm_bin_loader_smoke PRIVATE hwm14)
 target_compile_definitions(hwm14_hwm_bin_loader_smoke PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

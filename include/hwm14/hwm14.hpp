@@ -3,6 +3,8 @@
 // Author: watsonryan
 // Purpose: Public C++20 API for the HWM14 model.
 
+#include <memory>
+
 #include "hwm14/data_paths.hpp"
 #include "hwm14/error.hpp"
 #include "hwm14/result.hpp"
@@ -18,9 +20,11 @@ class Model {
   [[nodiscard]] Result<Winds, Error> Evaluate(const Inputs& in) const;
 
  private:
-  explicit Model(DataPaths paths, Options options) : paths_(std::move(paths)), options_(std::move(options)) {}
+  struct Impl;
 
-  DataPaths paths_{};
+  explicit Model(std::shared_ptr<const Impl> impl, Options options) : impl_(std::move(impl)), options_(std::move(options)) {}
+
+  std::shared_ptr<const Impl> impl_{};
   Options options_{};
 };
 

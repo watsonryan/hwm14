@@ -4,8 +4,20 @@
 #include "hwm14/hwm14.hpp"
 
 #include <cmath>
+#include <memory>
+
+#include "hwm14/detail/dwm_loader.hpp"
+#include "hwm14/detail/gd2qd_loader.hpp"
+#include "hwm14/detail/hwm_bin_loader.hpp"
 
 namespace hwm14 {
+
+struct Model::Impl {
+  DataPaths paths{};
+  detail::HwmBinHeader hwm{};
+  detail::Gd2qdData gd2qd{};
+  detail::DwmData dwm{};
+};
 
 Result<Model, Error> Model::LoadFromDirectory(std::filesystem::path data_dir, Options options) {
   options.data_dir = std::move(data_dir);
@@ -13,7 +25,29 @@ Result<Model, Error> Model::LoadFromDirectory(std::filesystem::path data_dir, Op
   if (!paths) {
     return Result<Model, Error>::Err(paths.error());
   }
-  return Result<Model, Error>::Ok(Model(paths.value(), options));
+
+  auto hwm = detail::LoadHwmBinHeader(paths.value().hwm_bin);
+  if (!hwm) {
+    return Result<Model, Error>::Err(hwm.error());
+  }
+
+  auto gd2qd = detail::LoadGd2qdData(paths.value().gd2qd_dat);
+  if (!gd2qd) {
+    return Result<Model, Error>::Err(gd2qd.error());
+  }
+
+  auto dwm = detail::LoadDwmData(paths.value().dwm_dat);
+  if (!dwm) {
+    return Result<Model, Error>::Err(dwm.error());
+  }
+
+  auto impl = std::make_shared<Impl>();
+  impl->paths = std::move(paths.value());
+  impl->hwm = std::move(hwm.value());
+  impl->gd2qd = std::move(gd2qd.value());
+  impl->dwm = std::move(dwm.value());
+
+  return Result<Model, Error>::Ok(Model(std::move(impl), options));
 }
 
 Result<Winds, Error> Model::Evaluate(const Inputs& in) const {
