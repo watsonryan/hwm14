@@ -63,3 +63,8 @@ tools/convert_gfortran_to_csv.py \
 - `docs/numerical_fidelity.md`
 - `docs/thread_safety_and_performance.md`
 - `docs/licensing.md`
+
+## Code quality config
+
+- `.clang-format`
+- `.clang-tidy`

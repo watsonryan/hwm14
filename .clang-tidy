@@ -1,0 +1,12 @@
+# Author: watsonryan
+# Purpose: Baseline static analysis checks for hwm14.
+
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  readability-*
+WarningsAsErrors: ''
+HeaderFilterRegex: 'include/hwm14/.*|src/.*|tests/.*'
+FormatStyle: file
