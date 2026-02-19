@@ -612,23 +612,30 @@ Result<Winds, Error> QuietWindsImpl(const Model::Impl& impl, const Inputs& in) {
 }
 
 Result<Gd2qdTransform, Error> Gd2qdImpl(const Model::Impl& impl, double glat_in, double glon) {
-  std::vector<double> gpbar;
-  std::vector<double> gvbar;
-  std::vector<double> gwbar;
+  struct Gd2qdScratch {
+    std::vector<double> gpbar;
+    std::vector<double> gvbar;
+    std::vector<double> gwbar;
+    std::vector<double> sh;
+    std::vector<double> shgradtheta;
+    std::vector<double> shgradphi;
+  };
+  thread_local Gd2qdScratch scratch;
 
   const double theta = (90.0 - glat_in) * kDtor;
-  impl.alf.Basis(impl.gd2qd.nmax, impl.gd2qd.mmax, theta, gpbar, gvbar, gwbar);
+  impl.alf.Basis(impl.gd2qd.nmax, impl.gd2qd.mmax, theta, scratch.gpbar, scratch.gvbar, scratch.gwbar);
 
   const double phi = glon * kDtor;
-  std::vector<double> sh(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
-  std::vector<double> shgradtheta(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
-  std::vector<double> shgradphi(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
+  scratch.sh.assign(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
+  scratch.shgradtheta.assign(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
+  scratch.shgradphi.assign(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
 
   int i = 0;
   for (int n = 0; n <= impl.gd2qd.nmax; ++n) {
-    sh[static_cast<std::size_t>(i)] = gpbar[Idx2(n, 0, impl.gd2qd.mmax)];
-    shgradtheta[static_cast<std::size_t>(i)] = gvbar[Idx2(n, 0, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)];
-    shgradphi[static_cast<std::size_t>(i)] = 0.0;
+    scratch.sh[static_cast<std::size_t>(i)] = scratch.gpbar[Idx2(n, 0, impl.gd2qd.mmax)];
+    scratch.shgradtheta[static_cast<std::size_t>(i)] =
+        scratch.gvbar[Idx2(n, 0, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)];
+    scratch.shgradphi[static_cast<std::size_t>(i)] = 0.0;
     ++i;
   }
   for (int m = 1; m <= impl.gd2qd.mmax; ++m) {
@@ -636,23 +643,23 @@ Result<Gd2qdTransform, Error> Gd2qdImpl(const Model::Impl& impl, double glat_in,
     const double cosmphi = std::cos(mphi);
     const double sinmphi = std::sin(mphi);
     for (int n = m; n <= impl.gd2qd.nmax; ++n) {
-      sh[static_cast<std::size_t>(i)] = gpbar[Idx2(n, m, impl.gd2qd.mmax)] * cosmphi;
-      sh[static_cast<std::size_t>(i + 1)] = gpbar[Idx2(n, m, impl.gd2qd.mmax)] * sinmphi;
-      shgradtheta[static_cast<std::size_t>(i)] =
-          gvbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * cosmphi;
-      shgradtheta[static_cast<std::size_t>(i + 1)] =
-          gvbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * sinmphi;
-      shgradphi[static_cast<std::size_t>(i)] =
-          -gwbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * sinmphi;
-      shgradphi[static_cast<std::size_t>(i + 1)] =
-          gwbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * cosmphi;
+      scratch.sh[static_cast<std::size_t>(i)] = scratch.gpbar[Idx2(n, m, impl.gd2qd.mmax)] * cosmphi;
+      scratch.sh[static_cast<std::size_t>(i + 1)] = scratch.gpbar[Idx2(n, m, impl.gd2qd.mmax)] * sinmphi;
+      scratch.shgradtheta[static_cast<std::size_t>(i)] =
+          scratch.gvbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * cosmphi;
+      scratch.shgradtheta[static_cast<std::size_t>(i + 1)] =
+          scratch.gvbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * sinmphi;
+      scratch.shgradphi[static_cast<std::size_t>(i)] =
+          -scratch.gwbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * sinmphi;
+      scratch.shgradphi[static_cast<std::size_t>(i + 1)] =
+          scratch.gwbar[Idx2(n, m, impl.gd2qd.mmax)] * impl.normadj[static_cast<std::size_t>(n)] * cosmphi;
       i += 2;
     }
   }
 
-  const double x = std::inner_product(sh.begin(), sh.end(), impl.xcoeff.begin(), 0.0);
-  const double y = std::inner_product(sh.begin(), sh.end(), impl.ycoeff.begin(), 0.0);
-  const double z = std::inner_product(sh.begin(), sh.end(), impl.zcoeff.begin(), 0.0);
+  const double x = std::inner_product(scratch.sh.begin(), scratch.sh.end(), impl.xcoeff.begin(), 0.0);
+  const double y = std::inner_product(scratch.sh.begin(), scratch.sh.end(), impl.ycoeff.begin(), 0.0);
+  const double z = std::inner_product(scratch.sh.begin(), scratch.sh.end(), impl.zcoeff.begin(), 0.0);
 
   const double qlonrad = std::atan2(y, x);
   const double cosqlon = std::cos(qlonrad);
@@ -662,13 +669,19 @@ Result<Gd2qdTransform, Error> Gd2qdImpl(const Model::Impl& impl, double glat_in,
   const double qlat = std::atan2(z, cosqlat) / kDtor;
   const double qlon = qlonrad / kDtor;
 
-  const double xgradtheta = std::inner_product(shgradtheta.begin(), shgradtheta.end(), impl.xcoeff.begin(), 0.0);
-  const double ygradtheta = std::inner_product(shgradtheta.begin(), shgradtheta.end(), impl.ycoeff.begin(), 0.0);
-  const double zgradtheta = std::inner_product(shgradtheta.begin(), shgradtheta.end(), impl.zcoeff.begin(), 0.0);
+  const double xgradtheta =
+      std::inner_product(scratch.shgradtheta.begin(), scratch.shgradtheta.end(), impl.xcoeff.begin(), 0.0);
+  const double ygradtheta =
+      std::inner_product(scratch.shgradtheta.begin(), scratch.shgradtheta.end(), impl.ycoeff.begin(), 0.0);
+  const double zgradtheta =
+      std::inner_product(scratch.shgradtheta.begin(), scratch.shgradtheta.end(), impl.zcoeff.begin(), 0.0);
 
-  const double xgradphi = std::inner_product(shgradphi.begin(), shgradphi.end(), impl.xcoeff.begin(), 0.0);
-  const double ygradphi = std::inner_product(shgradphi.begin(), shgradphi.end(), impl.ycoeff.begin(), 0.0);
-  const double zgradphi = std::inner_product(shgradphi.begin(), shgradphi.end(), impl.zcoeff.begin(), 0.0);
+  const double xgradphi =
+      std::inner_product(scratch.shgradphi.begin(), scratch.shgradphi.end(), impl.xcoeff.begin(), 0.0);
+  const double ygradphi =
+      std::inner_product(scratch.shgradphi.begin(), scratch.shgradphi.end(), impl.ycoeff.begin(), 0.0);
+  const double zgradphi =
+      std::inner_product(scratch.shgradphi.begin(), scratch.shgradphi.end(), impl.zcoeff.begin(), 0.0);
 
   Gd2qdTransform out{};
   out.qlat = qlat;
@@ -685,17 +698,22 @@ double MltCalcImpl(const Model::Impl& impl, double qlat, double qlon, double day
   const double asunglat = -std::asin(std::sin((day + ut / 24.0 - 80.0) * kDtor) * kSineps) / kDtor;
   const double asunglon = -ut * 15.0;
 
-  std::vector<double> spbar;
-  std::vector<double> svbar;
-  std::vector<double> swbar;
+  struct MltScratch {
+    std::vector<double> spbar;
+    std::vector<double> svbar;
+    std::vector<double> swbar;
+    std::vector<double> sh;
+  };
+  thread_local MltScratch scratch;
+
   const double theta = (90.0 - asunglat) * kDtor;
-  impl.alf.Basis(impl.gd2qd.nmax, impl.gd2qd.mmax, theta, spbar, svbar, swbar);
+  impl.alf.Basis(impl.gd2qd.nmax, impl.gd2qd.mmax, theta, scratch.spbar, scratch.svbar, scratch.swbar);
 
   const double phi = asunglon * kDtor;
-  std::vector<double> sh(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
+  scratch.sh.assign(static_cast<std::size_t>(impl.gd2qd.nterm), 0.0);
   int i = 0;
   for (int n = 0; n <= impl.gd2qd.nmax; ++n) {
-    sh[static_cast<std::size_t>(i)] = spbar[Idx2(n, 0, impl.gd2qd.mmax)];
+    scratch.sh[static_cast<std::size_t>(i)] = scratch.spbar[Idx2(n, 0, impl.gd2qd.mmax)];
     ++i;
   }
   for (int m = 1; m <= impl.gd2qd.mmax; ++m) {
@@ -703,58 +721,73 @@ double MltCalcImpl(const Model::Impl& impl, double qlat, double qlon, double day
     const double cosmphi = std::cos(mphi);
     const double sinmphi = std::sin(mphi);
     for (int n = m; n <= impl.gd2qd.nmax; ++n) {
-      sh[static_cast<std::size_t>(i)] = spbar[Idx2(n, m, impl.gd2qd.mmax)] * cosmphi;
-      sh[static_cast<std::size_t>(i + 1)] = spbar[Idx2(n, m, impl.gd2qd.mmax)] * sinmphi;
+      scratch.sh[static_cast<std::size_t>(i)] = scratch.spbar[Idx2(n, m, impl.gd2qd.mmax)] * cosmphi;
+      scratch.sh[static_cast<std::size_t>(i + 1)] = scratch.spbar[Idx2(n, m, impl.gd2qd.mmax)] * sinmphi;
       i += 2;
     }
   }
 
-  const double x = std::inner_product(sh.begin(), sh.end(), impl.xcoeff.begin(), 0.0);
-  const double y = std::inner_product(sh.begin(), sh.end(), impl.ycoeff.begin(), 0.0);
+  const double x = std::inner_product(scratch.sh.begin(), scratch.sh.end(), impl.xcoeff.begin(), 0.0);
+  const double y = std::inner_product(scratch.sh.begin(), scratch.sh.end(), impl.ycoeff.begin(), 0.0);
   const double asunqlon = std::atan2(y, x) / kDtor;
 
   return (qlon - asunqlon) / 15.0;
 }
 
 Result<Winds, Error> DisturbanceWindsMagImpl(const Model::Impl& impl, double mlt_h, double mlat_deg, double kp) {
-  std::vector<double> dpbar;
-  std::vector<double> dvbar;
-  std::vector<double> dwbar;
-  const double theta = (90.0 - mlat_deg) * kDtor;
-  impl.alf.Basis(impl.dwm.nmax, impl.dwm.mmax, theta, dpbar, dvbar, dwbar);
+  struct DwmScratch {
+    std::vector<double> dpbar;
+    std::vector<double> dvbar;
+    std::vector<double> dwbar;
+    std::vector<std::array<double, 2>> mltterms;
+    std::vector<std::array<double, 2>> vshterms;
+  };
+  thread_local DwmScratch scratch;
 
-  std::vector<std::array<double, 2>> mltterms(static_cast<std::size_t>(impl.dwm.mmax + 1));
+  const double theta = (90.0 - mlat_deg) * kDtor;
+  impl.alf.Basis(impl.dwm.nmax, impl.dwm.mmax, theta, scratch.dpbar, scratch.dvbar, scratch.dwbar);
+
+  scratch.mltterms.assign(static_cast<std::size_t>(impl.dwm.mmax + 1), {0.0, 0.0});
   const double phi = mlt_h * kDtor * 15.0;
   for (int m = 0; m <= impl.dwm.mmax; ++m) {
     const double mphi = static_cast<double>(m) * phi;
-    mltterms[static_cast<std::size_t>(m)][0] = std::cos(mphi);
-    mltterms[static_cast<std::size_t>(m)][1] = std::sin(mphi);
+    scratch.mltterms[static_cast<std::size_t>(m)][0] = std::cos(mphi);
+    scratch.mltterms[static_cast<std::size_t>(m)][1] = std::sin(mphi);
   }
 
-  std::vector<std::array<double, 2>> vshterms(static_cast<std::size_t>(impl.nvshterm), {0.0, 0.0});
+  scratch.vshterms.assign(static_cast<std::size_t>(impl.nvshterm), {0.0, 0.0});
   int ivshterm = 0;
   for (int n = 1; n <= impl.dwm.nmax; ++n) {
-    vshterms[static_cast<std::size_t>(ivshterm)][0] = -dvbar[Idx2(n, 0, impl.dwm.mmax)] * mltterms[0][0];
-    vshterms[static_cast<std::size_t>(ivshterm + 1)][0] = dwbar[Idx2(n, 0, impl.dwm.mmax)] * mltterms[0][0];
-    vshterms[static_cast<std::size_t>(ivshterm)][1] = -vshterms[static_cast<std::size_t>(ivshterm + 1)][0];
-    vshterms[static_cast<std::size_t>(ivshterm + 1)][1] = vshterms[static_cast<std::size_t>(ivshterm)][0];
+    scratch.vshterms[static_cast<std::size_t>(ivshterm)][0] =
+        -scratch.dvbar[Idx2(n, 0, impl.dwm.mmax)] * scratch.mltterms[0][0];
+    scratch.vshterms[static_cast<std::size_t>(ivshterm + 1)][0] =
+        scratch.dwbar[Idx2(n, 0, impl.dwm.mmax)] * scratch.mltterms[0][0];
+    scratch.vshterms[static_cast<std::size_t>(ivshterm)][1] =
+        -scratch.vshterms[static_cast<std::size_t>(ivshterm + 1)][0];
+    scratch.vshterms[static_cast<std::size_t>(ivshterm + 1)][1] =
+        scratch.vshterms[static_cast<std::size_t>(ivshterm)][0];
     ivshterm += 2;
 
     for (int m = 1; m <= impl.dwm.mmax; ++m) {
       if (m > n) {
         continue;
       }
-      vshterms[static_cast<std::size_t>(ivshterm)][0] = -dvbar[Idx2(n, m, impl.dwm.mmax)] * mltterms[static_cast<std::size_t>(m)][0];
-      vshterms[static_cast<std::size_t>(ivshterm + 1)][0] =
-          dvbar[Idx2(n, m, impl.dwm.mmax)] * mltterms[static_cast<std::size_t>(m)][1];
-      vshterms[static_cast<std::size_t>(ivshterm + 2)][0] =
-          dwbar[Idx2(n, m, impl.dwm.mmax)] * mltterms[static_cast<std::size_t>(m)][1];
-      vshterms[static_cast<std::size_t>(ivshterm + 3)][0] =
-          dwbar[Idx2(n, m, impl.dwm.mmax)] * mltterms[static_cast<std::size_t>(m)][0];
-      vshterms[static_cast<std::size_t>(ivshterm)][1] = -vshterms[static_cast<std::size_t>(ivshterm + 2)][0];
-      vshterms[static_cast<std::size_t>(ivshterm + 1)][1] = -vshterms[static_cast<std::size_t>(ivshterm + 3)][0];
-      vshterms[static_cast<std::size_t>(ivshterm + 2)][1] = vshterms[static_cast<std::size_t>(ivshterm)][0];
-      vshterms[static_cast<std::size_t>(ivshterm + 3)][1] = vshterms[static_cast<std::size_t>(ivshterm + 1)][0];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm)][0] =
+          -scratch.dvbar[Idx2(n, m, impl.dwm.mmax)] * scratch.mltterms[static_cast<std::size_t>(m)][0];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm + 1)][0] =
+          scratch.dvbar[Idx2(n, m, impl.dwm.mmax)] * scratch.mltterms[static_cast<std::size_t>(m)][1];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm + 2)][0] =
+          scratch.dwbar[Idx2(n, m, impl.dwm.mmax)] * scratch.mltterms[static_cast<std::size_t>(m)][1];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm + 3)][0] =
+          scratch.dwbar[Idx2(n, m, impl.dwm.mmax)] * scratch.mltterms[static_cast<std::size_t>(m)][0];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm)][1] =
+          -scratch.vshterms[static_cast<std::size_t>(ivshterm + 2)][0];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm + 1)][1] =
+          -scratch.vshterms[static_cast<std::size_t>(ivshterm + 3)][0];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm + 2)][1] =
+          scratch.vshterms[static_cast<std::size_t>(ivshterm)][0];
+      scratch.vshterms[static_cast<std::size_t>(ivshterm + 3)][1] =
+          scratch.vshterms[static_cast<std::size_t>(ivshterm + 1)][0];
       ivshterm += 4;
     }
   }
@@ -774,8 +807,8 @@ Result<Winds, Error> DisturbanceWindsMagImpl(const Model::Impl& impl, double mlt
     const int t2 = impl.dwm.termarr_flat[static_cast<std::size_t>(3 * iterm + 2)];
 
     if (t0 != 999) {
-      term0 *= vshterms[static_cast<std::size_t>(t0)][0];
-      term1 *= vshterms[static_cast<std::size_t>(t0)][1];
+      term0 *= scratch.vshterms[static_cast<std::size_t>(t0)][0];
+      term1 *= scratch.vshterms[static_cast<std::size_t>(t0)][1];
     }
     if (t1 != 999) {
       term0 *= kpterms[static_cast<std::size_t>(t1)];
