@@ -23,5 +23,12 @@ int main() {
   if (h.vnode[4] != 5.0 || h.vnode[5] != 10.0 || h.vnode[6] != 15.0 || h.vnode[7] != 20.0) {
     return EXIT_FAILURE;
   }
+  if (h.nb.size() != 37 || h.order.size() != static_cast<std::size_t>(h.ncomp) * 37U ||
+      h.mparm.size() != static_cast<std::size_t>(h.nbf) * 34U) {
+    return EXIT_FAILURE;
+  }
+  if (h.e1[3] == 0.0 && h.e2[3] == 0.0) {
+    return EXIT_FAILURE;
+  }
   return EXIT_SUCCESS;
 }

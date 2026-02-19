@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <array>
 #include <vector>
 
 #include "hwm14/error.hpp"
@@ -23,6 +24,11 @@ struct HwmBinHeader {
   std::int32_t p{};
   std::int32_t nnode{};
   std::vector<double> vnode{};
+  std::vector<std::int32_t> nb{};      // size nnode + 1
+  std::vector<std::int32_t> order{};   // column-major [ncomp x (nnode + 1)]
+  std::vector<double> mparm{};         // column-major [nbf x (nlev + 1)]
+  std::array<double, 5> e1{};
+  std::array<double, 5> e2{};
 };
 
 [[nodiscard]] Result<HwmBinHeader, Error> LoadHwmBinHeader(const std::filesystem::path& path);
