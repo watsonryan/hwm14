@@ -1,0 +1,40 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "HWM14_BUILD_TESTS": "ON",
+        "HWM14_BUILD_EXAMPLES": "ON"
+      }
+    },
+    { "name": "base-debug", "hidden": true, "inherits": ["base"], "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" } },
+    { "name": "base-release", "hidden": true, "inherits": ["base"], "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" } },
+    { "name": "base-asan", "hidden": true, "inherits": ["base-debug"], "cacheVariables": { "HWM14_SANITIZER": "address" } },
+    { "name": "base-ubsan", "hidden": true, "inherits": ["base-debug"], "cacheVariables": { "HWM14_SANITIZER": "undefined" } },
+    { "name": "base-profile", "hidden": true, "inherits": ["base-release"], "cacheVariables": { "HWM14_ENABLE_PROFILE": "ON" } },
+
+    { "name": "macos-debug", "inherits": ["base-debug"] },
+    { "name": "macos-release", "inherits": ["base-release"] },
+    { "name": "macos-asan", "inherits": ["base-asan"] },
+    { "name": "macos-ubsan", "inherits": ["base-ubsan"] },
+    { "name": "macos-profile", "inherits": ["base-profile"] }
+  ],
+  "buildPresets": [
+    { "name": "macos-debug", "configurePreset": "macos-debug" },
+    { "name": "macos-release", "configurePreset": "macos-release" },
+    { "name": "macos-asan", "configurePreset": "macos-asan" },
+    { "name": "macos-ubsan", "configurePreset": "macos-ubsan" },
+    { "name": "macos-profile", "configurePreset": "macos-profile" }
+  ],
+  "testPresets": [
+    { "name": "macos-debug", "configurePreset": "macos-debug" },
+    { "name": "macos-asan", "configurePreset": "macos-asan" },
+    { "name": "macos-ubsan", "configurePreset": "macos-ubsan" }
+  ]
+}

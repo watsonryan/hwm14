@@ -1,0 +1,16 @@
+# Author: watsonryan
+# Purpose: Smoke-test targets for hwm14 C++ port scaffolding.
+
+add_executable(hwm14_data_paths_smoke test_data_paths_smoke.cpp)
+target_link_libraries(hwm14_data_paths_smoke PRIVATE hwm14)
+target_compile_definitions(hwm14_data_paths_smoke PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+hwm14_apply_common_warnings(hwm14_data_paths_smoke)
+hwm14_apply_runtime_flags(hwm14_data_paths_smoke)
+add_test(NAME hwm14_data_paths_smoke COMMAND hwm14_data_paths_smoke)
+
+add_executable(hwm14_api_smoke test_api_smoke.cpp)
+target_link_libraries(hwm14_api_smoke PRIVATE hwm14)
+target_compile_definitions(hwm14_api_smoke PRIVATE HWM14_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+hwm14_apply_common_warnings(hwm14_api_smoke)
+hwm14_apply_runtime_flags(hwm14_api_smoke)
+add_test(NAME hwm14_api_smoke COMMAND hwm14_api_smoke)
