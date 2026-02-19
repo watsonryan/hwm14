@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(HWM14_BUILD_TESTS "Build tests" ON)
 option(HWM14_BUILD_EXAMPLES "Build examples" ON)
+option(HWM14_BUILD_DOCS "Build Doxygen API docs target" OFF)
 option(HWM14_STRICT_FP "Use strict floating-point flags" ON)
 option(HWM14_ENABLE_PROFILE "Enable profiling-oriented flags" OFF)
 set(HWM14_SANITIZER "" CACHE STRING "Sanitizer: , address, undefined, thread")
@@ -88,6 +89,25 @@ install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/hwm14ConfigVersion.cmake"
   DESTINATION "${HWM14_INSTALL_CMAKEDIR}"
 )
+
+if(HWM14_BUILD_DOCS)
+  find_package(Doxygen QUIET)
+  if(DOXYGEN_FOUND)
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in"
+      "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+      @ONLY
+    )
+    add_custom_target(hwm14_docs
+      COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      COMMENT "Generating API documentation with Doxygen"
+      VERBATIM
+    )
+  else()
+    message(STATUS "Doxygen not found; hwm14_docs target will not be generated.")
+  endif()
+endif()
 
 if(HWM14_BUILD_TESTS)
   include(CTest)

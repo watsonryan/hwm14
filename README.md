@@ -38,3 +38,12 @@ End-to-end package smoke check:
 ```bash
 tools/validate_package_install.sh
 ```
+
+## API docs (Doxygen)
+
+```bash
+cmake --preset macos-debug -DHWM14_BUILD_DOCS=ON
+cmake --build --preset macos-debug -j --target hwm14_docs
+```
+
+Generated HTML is written under `build/<preset>/docs/html/`.

@@ -1,0 +1,21 @@
+# Author: watsonryan
+# Purpose: Doxygen configuration template for HWM14 public API docs.
+
+PROJECT_NAME           = "hwm14-cpp"
+PROJECT_NUMBER         = "@PROJECT_VERSION@"
+OUTPUT_DIRECTORY       = "@CMAKE_CURRENT_BINARY_DIR@/docs"
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+QUIET                  = YES
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+WARN_IF_UNDOCUMENTED   = NO
+WARN_AS_ERROR          = NO
+INPUT                  = "@CMAKE_CURRENT_SOURCE_DIR@/include" "@CMAKE_CURRENT_SOURCE_DIR@/README.md"
+FILE_PATTERNS          = *.hpp *.md
+USE_MDFILE_AS_MAINPAGE = "@CMAKE_CURRENT_SOURCE_DIR@/README.md"
+JAVADOC_AUTOBRIEF      = YES
+GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = YES
