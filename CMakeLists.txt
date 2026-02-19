@@ -21,6 +21,7 @@ add_library(hwm14
   src/error_utils.cpp
   src/data_paths.cpp
   src/hwm_bin_loader.cpp
+  src/gd2qd_loader.cpp
 )
 
 add_library(hwm14::hwm14 ALIAS hwm14)
