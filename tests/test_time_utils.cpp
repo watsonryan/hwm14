@@ -20,8 +20,8 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  const auto bad1 = hwm14::detail::DecodeYyddd(95000);
-  if (bad1 || bad1.error().code != hwm14::ErrorCode::kInvalidInput) {
+  const auto day0 = hwm14::detail::DecodeYyddd(95000);
+  if (!day0 || day0.value().day_of_year != 0) {
     return EXIT_FAILURE;
   }
 

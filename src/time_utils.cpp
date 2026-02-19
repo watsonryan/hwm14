@@ -15,9 +15,9 @@ Result<DecodedYyddd, Error> DecodeYyddd(std::int32_t yyddd) {
 
   const std::int32_t yy = yyddd / 1000;
   const std::int32_t ddd = yyddd % 1000;
-  if (ddd < 1 || ddd > 366) {
+  if (ddd < 0 || ddd > 366) {
     return Result<DecodedYyddd, Error>::Err(
-        MakeError(ErrorCode::kInvalidInput, "yyddd day-of-year must be in [1, 366]", {}, "DecodeYyddd"));
+        MakeError(ErrorCode::kInvalidInput, "yyddd day-of-year must be in [0, 366]", {}, "DecodeYyddd"));
   }
 
   DecodedYyddd out{};

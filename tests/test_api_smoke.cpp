@@ -1,7 +1,8 @@
 // Author: watsonryan
-// Purpose: Verify API error behavior for current pure C++ evaluator status.
+// Purpose: Verify implemented API behavior and composition semantics.
 
 #include <cstdlib>
+#include <cmath>
 #include <filesystem>
 
 #include "hwm14/hwm14.hpp"
@@ -21,12 +22,12 @@ int main() {
   in.ap3 = 80.0;
 
   const auto quiet = model.value().QuietWinds(in);
-  if (quiet || quiet.error().code != hwm14::ErrorCode::kNotImplemented) {
+  if (!quiet) {
     return EXIT_FAILURE;
   }
 
   const auto dist_geo = model.value().DisturbanceWindsGeo(in);
-  if (dist_geo || dist_geo.error().code != hwm14::ErrorCode::kNotImplemented) {
+  if (!dist_geo) {
     return EXIT_FAILURE;
   }
   auto quiet_only_in = in;
@@ -40,17 +41,29 @@ int main() {
   }
 
   const auto dist_mag = model.value().DisturbanceWindsMag(3.0, 45.0, 4.0);
-  if (dist_mag || dist_mag.error().code != hwm14::ErrorCode::kNotImplemented) {
+  if (!dist_mag) {
     return EXIT_FAILURE;
   }
 
   const auto total = model.value().TotalWinds(in);
-  if (total || total.error().code != hwm14::ErrorCode::kNotImplemented) {
+  if (!total) {
+    return EXIT_FAILURE;
+  }
+  if (!std::isfinite(total.value().meridional_mps) || !std::isfinite(total.value().zonal_mps)) {
+    return EXIT_FAILURE;
+  }
+  const double dm = std::abs((quiet.value().meridional_mps + dist_geo.value().meridional_mps) - total.value().meridional_mps);
+  const double dz = std::abs((quiet.value().zonal_mps + dist_geo.value().zonal_mps) - total.value().zonal_mps);
+  if (dm > 1e-9 || dz > 1e-9) {
     return EXIT_FAILURE;
   }
 
   const auto eval = model.value().Evaluate(in);
-  if (eval || eval.error().code != hwm14::ErrorCode::kNotImplemented) {
+  if (!eval) {
+    return EXIT_FAILURE;
+  }
+  if (std::abs(eval.value().meridional_mps - total.value().meridional_mps) > 1e-9 ||
+      std::abs(eval.value().zonal_mps - total.value().zonal_mps) > 1e-9) {
     return EXIT_FAILURE;
   }
 
