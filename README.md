@@ -18,6 +18,36 @@ cmake --build --preset macos-debug -j
 ctest --preset macos-debug --output-on-failure
 ```
 
+## API quick start
+
+```cpp
+#include "hwm14/hwm14.hpp"
+
+auto model = hwm14::Model::LoadFromDirectory(data_dir);
+if (!model) {
+  // handle model.error()
+}
+
+hwm14::Inputs in{};
+in.yyddd = 95150;
+in.ut_seconds = 12.0 * 3600.0;
+in.altitude_km = 250.0;
+in.geodetic_lat_deg = -45.0;
+in.geodetic_lon_deg = -85.0;
+in.ap3 = 80.0;
+
+auto out = model.value().Evaluate(in);
+if (!out) {
+  // handle out.error()
+}
+```
+
+Batch-style example:
+
+```bash
+./build/macos-debug/hwm14_batch_cli /path/to/hwm14/data_dir
+```
+
 ## Install and package consumption
 
 ```bash
@@ -74,6 +104,7 @@ Optional overrides:
 - `docs/thread_safety_and_performance.md`
 - `docs/licensing.md`
 - `docs/perf_baseline.md`
+- `docs/api_usage.md`
 
 Parity tolerances are documented in `docs/numerical_fidelity.md`.
 

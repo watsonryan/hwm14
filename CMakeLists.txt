@@ -51,6 +51,11 @@ if(HWM14_BUILD_EXAMPLES)
   target_link_libraries(hwm14_cli PRIVATE hwm14)
   hwm14_apply_common_warnings(hwm14_cli)
   hwm14_apply_runtime_flags(hwm14_cli)
+
+  add_executable(hwm14_batch_cli examples/hwm14_batch_cli.cpp)
+  target_link_libraries(hwm14_batch_cli PRIVATE hwm14)
+  hwm14_apply_common_warnings(hwm14_batch_cli)
+  hwm14_apply_runtime_flags(hwm14_batch_cli)
 endif()
 
 install(TARGETS hwm14
