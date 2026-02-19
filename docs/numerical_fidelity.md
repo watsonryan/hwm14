@@ -23,3 +23,15 @@ Reference scenario outputs from `testdata/gfortran.txt` are converted to:
 
 These files are intended to anchor parity regression tests as evaluator pieces
 are implemented.
+
+## Golden parity tolerances
+
+Current tolerances are scenario-specific:
+- `test_golden_dwm_parity.cpp`: `2e-2` m/s
+- `test_golden_profiles_parity.cpp`:
+  - `2e-2` m/s for height/longitude/day-of-year/magnetic-activity profiles
+  - `5e-2` m/s for latitude profile
+  - `1.2e-1` m/s for local-time profile
+
+The larger local-time tolerance reflects the known highest residual differences
+near the local-time wraparound points while preserving stable cross-build parity.

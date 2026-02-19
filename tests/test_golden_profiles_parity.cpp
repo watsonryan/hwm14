@@ -25,6 +25,16 @@ struct Row {
   double tzon{};
 };
 
+double ScenarioTolerance(const std::string& scenario) {
+  if (scenario == "local time profile") {
+    return 1.2e-1;
+  }
+  if (scenario == "latitude profile") {
+    return 5e-2;
+  }
+  return 2e-2;
+}
+
 std::vector<std::string> Split(const std::string& s) {
   std::vector<std::string> out;
   std::string cur;
@@ -119,7 +129,6 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  constexpr double kTol = 1.2e-1;
   int checked = 0;
   while (std::getline(in, line)) {
     if (line.empty()) {
@@ -153,9 +162,10 @@ int main() {
       return EXIT_FAILURE;
     }
 
-    if (std::abs(q.value().meridional_mps - r.qmer) > kTol || std::abs(q.value().zonal_mps - r.qzon) > kTol ||
-        std::abs(d.value().meridional_mps - r.dmer) > kTol || std::abs(d.value().zonal_mps - r.dzon) > kTol ||
-        std::abs(t.value().meridional_mps - r.tmer) > kTol || std::abs(t.value().zonal_mps - r.tzon) > kTol) {
+    const double tol = ScenarioTolerance(r.scenario);
+    if (std::abs(q.value().meridional_mps - r.qmer) > tol || std::abs(q.value().zonal_mps - r.qzon) > tol ||
+        std::abs(d.value().meridional_mps - r.dmer) > tol || std::abs(d.value().zonal_mps - r.dzon) > tol ||
+        std::abs(t.value().meridional_mps - r.tmer) > tol || std::abs(t.value().zonal_mps - r.tzon) > tol) {
       return EXIT_FAILURE;
     }
     ++checked;

@@ -75,6 +75,8 @@ Optional overrides:
 - `docs/licensing.md`
 - `docs/perf_baseline.md`
 
+Parity tolerances are documented in `docs/numerical_fidelity.md`.
+
 ## Code quality config
 
 - `.clang-format`
